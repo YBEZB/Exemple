@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuadro de Texto con Botón</title>
+    
+    <style>
+        body {
+            background-color: rgb(41, 40, 40);
+        }
+        #contenedor {
+            width: 500px; 
+            max-height: calc(100vh - 10px); 
+            overflow-y: auto; 
+            overflow-x: hidden; 
+            background-color: #292929;
+            border: 2px solid white;
+            border-radius: 15px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            padding: 10px;
+            text-align: center;
+            transition: max-height 0.5s; 
+        }
+
+        #cuadroTexto {
+            width: calc(100% - 60px); 
+            height: 50px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background-color: black;
+            color: white; 
+            transition: transform 0.5s ease-in-out;
+            font-size: 90%; 
+            align-items: center;
+            float: left; 
+        }
+
+        #boton {
+            width: 50px;
+            height: 50px;
+            border-radius: 20px;
+            border: none;
+            outline: none;
+            background-color: yellow;
+            cursor: pointer;
+            float: right; 
+        }
+    
+        #boton:hover {
+            background-color: orange;
+        }
+    
+        .textoIngresado {
+            clear: both; 
+            color: white;
+            margin-top: 10px; 
+            margin-bottom: 5px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; /* Agregado para truncar el texto */
+        }
+    
+    </style>
+</head>
+
+<body>
+    <div id="contenedor">
+        <button id="boton" onclick="subirTexto()" aria-label="Subir texto">↑</button>
+        <input type="text" id="cuadroTexto" placeholder="  Escribe aquí..." onkeydown="if (event.keyCode == 13) subirTexto();">
+    </div>
+    
+    <script>
+        var faq = {};
+        
+        fetch('https://raw.githubusercontent.com/YBEZB/Reposit/main/chat.json')
+        .then(response => response.json())
+        .then(data => {
+            faq = data;
+        })
+        .catch(error => console.error('Error:', error));
+        
+        function calcular(operacion) {
+            try {
+                return eval(operacion);
+            } catch (error) {
+                return 'Error: Operación inválida.';
+            }
+        }
+        
+        function subirTexto() {
+            var cuadroTexto = document.getElementById('cuadroTexto');
+            var texto = cuadroTexto.value;
+            if (texto.trim() !== '') { 
+                var nuevoTexto = document.createElement('div');
+                nuevoTexto.classList.add('textoIngresado');
+                document.getElementById('contenedor').appendChild(nuevoTexto);
+                cuadroTexto.value = ''; 
+                var contenedor = document.getElementById('contenedor');
+                contenedor.style.maxHeight = (contenedor.scrollHeight + 5) + "px";
+                contenedor.style.width = "calc(100% - 10px)";
+                contenedor.scrollTop = contenedor.scrollHeight;
+                
+                
+                var i = 0;
+                var intervalo = setInterval(function() {
+                    if (i < texto.length) {
+                        nuevoTexto.textContent += texto.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(intervalo);
+                        if (/^\d+[\+\-\*\/]\d+$/.test(texto)) {
+                            var resultado = calcular(texto);
+                            responder('Resultado: ' + resultado);
+                        }
+                        else if (faq[texto.toLowerCase()]) {
+                            responder(faq[texto.toLowerCase()]);
+                        }
+                    }
+                }, 50); 
+            }
+        }
+        
+        function responder(texto) {
+            var respuesta = document.createElement('div');
+            respuesta.textContent = texto;
+            respuesta.classList.add('textoIngresado');
+            document.getElementById('contenedor').appendChild(respuesta);
+            // Ajustar la altura máxima del contenedor
+            var contenedor = document.getElementById('contenedor');
+            contenedor.style.maxHeight = (contenedor.scrollHeight + 5) + "px";
+            // Desplazar el scroll hasta abajo
+            contenedor.scrollTop = contenedor.scrollHeight;
+        }
+    </script>
+</body>
+</html>
